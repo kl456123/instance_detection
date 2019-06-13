@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+import torch.nn as nn
+
+
+def build(config):
+    loss_type = config['type']
+    if loss_type == 'ce':
+        return build_ce_loss(config)
+    elif loss_type == 'smooth_l1':
+        return build_smooth_l1_loss(config)
+    else:
+        raise TypeError('unknown type : {}'.format(loss_type))
+
+
+def build_ce_loss(config):
+    return nn.CrossEntropyLoss(reduction='none')
+
+
+def build_smooth_l1_loss(config):
+    return nn.SmoothL1Loss(reduction='none')
