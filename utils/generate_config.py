@@ -25,11 +25,11 @@ if DEBUG:
     num_iters = 1000
     checkpoint_interval = 100
     disp_interval = 100
-    training_dataset_file = "data/demo.txt"
-    testing_dataset_file = "data/demo.txt"
+    training_dataset_file = "data/dataset_files/demo.txt"
+    testing_dataset_file = "data/dataset_files/demo.txt"
     if DATASET_TYPE == 'nuscenes_kitti':
-        training_dataset_file = "data/nuscenes_demo.txt"
-        testing_dataset_file = "data/nuscenes_demo.txt"
+        training_dataset_file = "data/dataset_files/nuscenes_demo.txt"
+        testing_dataset_file = "data/dataset_files/nuscenes_demo.txt"
     lr_scheduler = 'step'
     optimizer = 'sgd'
     if NET_TYPE == 'faster_rcnn':
@@ -42,11 +42,11 @@ else:
     num_iters = 600000
     checkpoint_interval = 4000
     disp_interval = 800
-    training_dataset_file = "data/train.txt"
-    testing_dataset_file = "data/val.txt"
+    training_dataset_file = "data/dataset_files/train.txt"
+    testing_dataset_file = "data/dataset_files/val.txt"
     if DATASET_TYPE == 'nuscenes_kitti':
-        training_dataset_file = 'data/nuscenes_train.txt'
-        testing_dataset_file = 'data/nuscenes_val.txt'
+        training_dataset_file = 'data/dataset_files/nuscenes_train.txt'
+        testing_dataset_file = 'data/dataset_files/nuscenes_val.txt'
     lr_scheduler = 'multi_step'
     optimizer = 'sgd'
 
