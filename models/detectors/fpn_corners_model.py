@@ -13,6 +13,7 @@ from models import feature_extractors
 from models import detectors
 
 
+@DETECTORS.register('fpn_corners_3d')
 @DETECTORS.register('fpn_corners_2d')
 class FPNCornersModel(FPNFasterRCNN):
     def init_weights(self):

@@ -3,10 +3,11 @@ from core import constants
 
 # SWITCH that you only should care about
 DATASET_TYPE = 'mono_3d_kitti'
+# DATASET_TYPE = 'coco'
 # DATASET_TYPE = 'keypoint_kitti'
 # DATASET_TYPE = 'nuscenes'
 # DATASET_TYPE = 'bdd'
-NET_TYPE = 'fpn_corners_2d'
+# NET_TYPE = 'fpn_corners_2d'
 # NET_TYPE = 'fpn_corners_stable'
 # NET_TYPE = 'fpn_mono_3d_better'
 # NET_TYPE = 'prnet'
@@ -14,6 +15,7 @@ NET_TYPE = 'fpn_corners_2d'
 # NET_TYPE = 'maskrcnn'
 # NET_TYPE = 'faster_rcnn'
 # NET_TYPE = 'fpn'
+NET_TYPE = 'fpn_corners_3d'
 # DATASET_TYPE = 'kitti'
 JOBS = False
 DEBUG = not JOBS
@@ -26,7 +28,7 @@ if DEBUG:
     num_iters = 1000
     checkpoint_interval = 100
     disp_interval = 100
-    training_dataset_file = "data/dataset_files/demo.txt"
+    training_dataset_file = "data/dataset_files//demo.txt"
     testing_dataset_file = "data/dataset_files/demo.txt"
     if DATASET_TYPE == 'nuscenes_kitti':
         training_dataset_file = "data/dataset_files/nuscenes_demo.txt"
@@ -151,6 +153,19 @@ elif DATASET_TYPE == 'bdd':
 
     root_path = "/data/bdd/bdd100k/"
     image_size = [384, 768]
+elif DATASET_TYPE == 'coco':
+    dataset_type = 'coco'
+    classes = [
+        "person", "bicycle", "car", "motorcycle", "bus", "train", "truck"
+    ]
+    root_path = '/data/liangxiong/COCO2017'
+    training_label_path = "annotations/instances_train2017.json"
+    testing_label_path = "annotations/instances_val2017.json"
+    training_data_path = "train2017"
+    testing_data_path = 'val2017'
+
+    image_size = [700, 800]
+
 elif DATASET_TYPE == "nuscenes":
     dataset_type = 'nuscenes'
     classes = [
@@ -218,7 +233,16 @@ def generate_dataset_config(training):
                 "label_path": "labels"
             })
     elif dataset_type == 'coco':
-        pass
+        if training:
+            dataset_config.update({
+                "data_path": training_data_path,
+                "label_path": training_label_path
+            })
+        else:
+            dataset_config.update({
+                "data_path": testing_data_path,
+                "label_path": testing_label_path
+            })
     elif dataset_type == 'nuscenes':
         dataset_config.update({"data_path": data_path, "label_path": "."})
     return dataset_config
@@ -391,6 +415,18 @@ def generate_instance_config(attr_list,
                 "type": "corners_2d"
             },
             "num_channels": 4 * 8
+        },
+        "corners_3d": {
+            "assigner_config": {
+                "type": "corners_3d",
+                "coder_config": {
+                    "type": "corners_3d"
+                }
+            },
+            "losses_config": {
+                "type": "corners_3d"
+            },
+            "num_channels": 3 * 8 + 2 + 1
         }
     }
     attr_config = {}
@@ -409,6 +445,9 @@ def generate_model_config():
     rcnn_attrs_list = [constants.KEY_BOXES_2D, constants.KEY_CLASSES]
     if NET_TYPE in ['fpn_corners_2d']:
         rcnn_attrs_list.append(constants.KEY_CORNERS_2D)
+    elif NET_TYPE in ['fpn_corners_3d']:
+        rcnn_attrs_list.append(constants.KEY_CORNERS_3D)
+
     rpn_instance = generate_instance_config(
         rpn_attrs_list,
         fg_thresh=0.7,

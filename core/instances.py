@@ -185,10 +185,17 @@ class Instance(dict):
         # corners_2d
         #  import ipdb
         #  ipdb.set_trace()
-        corners_2d = instance[constants.KEY_CORNERS_2D]
-        corners_2d[:, :, :, 0] = corners_2d[:, :, :, 0] / image_info[:, 3]
-        corners_2d[:, :, :, 1] = corners_2d[:, :, :, 1] / image_info[:, 2]
-        instance[constants.KEY_CORNERS_2D] = corners_2d
+        if constants.KEY_CORNERS_2D in instance:
+            corners_2d = instance[constants.KEY_CORNERS_2D]
+            corners_2d[:, :, :, 0] = corners_2d[:, :, :, 0] / image_info[:, 3]
+            corners_2d[:, :, :, 1] = corners_2d[:, :, :, 1] / image_info[:, 2]
+            instance[constants.KEY_CORNERS_2D] = corners_2d
+
+        #  if constants.KEY_CORNERS_3D in instance:
+        #  corners_3d = instance[constants.KEY_CORNERS_3D]
+        #  corners_3d[:, :, :, 0] = corners_2d[:, :, :, 0] / image_info[:, 3]
+        #  corners_3d[:, :, :, 1] = corners_2d[:, :, :, 1] / image_info[:, 2]
+        #  instance[constants.KEY_CORNERS_2D] = corners_2d
 
         return instance
 

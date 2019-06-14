@@ -65,6 +65,12 @@ class FPNFasterRCNN(FasterRCNN):
         output_dict = {}
         losses_dict = {}
 
+        # TODO move all auxiliary item from feed_dict to auxiliary_dict
+        # before get data from dataloader
+        if feed_dict.get(constants.KEY_STEREO_CALIB_P2) is not None:
+            auxiliary_dict[constants.KEY_STEREO_CALIB_P2] = feed_dict[
+                constants.KEY_STEREO_CALIB_P2]
+
         # base model
         rpn_feat_maps, rcnn_feat_maps = self.feature_extractor.first_stage_feature(
             feed_dict[constants.KEY_IMAGE])

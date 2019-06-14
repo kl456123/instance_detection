@@ -376,7 +376,7 @@ class Box2DTargetAssigner(RegTargetAssigner):
 # # no need grad_fn
 # return reg_targets_batch
 
-
+@TARGET_ASSIGNERS.register(constants.KEY_CORNERS_3D)
 @TARGET_ASSIGNERS.register(constants.KEY_CORNERS_2D)
 class Corners2DTargetAssigner(RegTargetAssigner):
     def _assign_targets_and_inside_weights(self, feed_dict, auxiliary_dict):

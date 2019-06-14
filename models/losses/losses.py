@@ -11,6 +11,8 @@ def build(config):
         return build_smooth_l1_loss(config)
     elif loss_type == 'corners_2d':
         return build_corners_2d(config)
+    elif loss_type == 'corners_3d':
+        return build_corners_3d(config)
     else:
         raise TypeError('unknown type : {}'.format(loss_type))
 
@@ -26,3 +28,8 @@ def build_smooth_l1_loss(config):
 def build_corners_2d(config):
     from models.losses.corners_loss import CornersLoss
     return CornersLoss()
+
+
+def build_corners_3d(config):
+    from models.losses.corners_3d_loss import Corners3DLoss
+    return Corners3DLoss()
