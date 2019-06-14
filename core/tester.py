@@ -107,14 +107,13 @@ class Tester(object):
             model.enable_feat_vis()
         end_time = 0
 
-
         for step, data in enumerate(dataloader):
             # start_time = time.time()
             data = common.to_cuda(data)
             image_path = data[constants.KEY_IMAGE_PATH]
 
             with torch.no_grad():
-                prediction = model(data)
+                prediction, _, _ = model(data)
             # duration_time = time.time() - start_time
 
             if self.feat_vis:
@@ -245,7 +244,7 @@ class Tester(object):
             image_path = data[constants.KEY_IMAGE_PATH]
 
             with torch.no_grad():
-                prediction = model(data)
+                prediction, _, _ = model(data)
             # duration_time = time.time() - start_time
 
             if self.feat_vis:
@@ -540,9 +539,9 @@ class Tester(object):
                 end_time = time.time()
 
     def test(self, dataloader, model, logger):
-        # test_fn = getattr(self, self.test_type)
-        # test_fn(dataloader, model, logger)
+        test_fn = getattr(self, self.test_type)
+        test_fn(dataloader, model, logger)
         # self.test_super_nms(dataloader, model, logger)
-        self.test_2d(dataloader, model, logger)
+        # self.test_2d(dataloader, model, logger)
         #  self.test_3d(dataloader, model, logger)
         # self.test_corners_3d(dataloader, model, logger)

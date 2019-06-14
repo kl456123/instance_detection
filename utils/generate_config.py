@@ -2,19 +2,19 @@
 from core import constants
 
 # SWITCH that you only should care about
-# DATASET_TYPE = 'mono_3d_kitti'
+DATASET_TYPE = 'mono_3d_kitti'
 # DATASET_TYPE = 'keypoint_kitti'
 # DATASET_TYPE = 'nuscenes'
 # DATASET_TYPE = 'bdd'
-# NET_TYPE = 'fpn_corners_2d'
+NET_TYPE = 'fpn_corners_2d'
 # NET_TYPE = 'fpn_corners_stable'
 # NET_TYPE = 'fpn_mono_3d_better'
 # NET_TYPE = 'prnet'
 # NET_TYPE = 'prnet_mono_3d'
 # NET_TYPE = 'maskrcnn'
 # NET_TYPE = 'faster_rcnn'
-NET_TYPE = 'fpn'
-DATASET_TYPE = 'kitti'
+# NET_TYPE = 'fpn'
+# DATASET_TYPE = 'kitti'
 JOBS = False
 DEBUG = not JOBS
 
@@ -379,6 +379,18 @@ def generate_instance_config(attr_list,
                 "type": "ce"
             },
             "num_channels": 2
+        },
+        "corners_2d": {
+            "assigner_config": {
+                "type": "corners_2d",
+                "coder_config": {
+                    "type": "corners_2d_face"
+                }
+            },
+            "losses_config": {
+                "type": "corners_2d"
+            },
+            "num_channels": 4 * 8
         }
     }
     attr_config = {}
@@ -395,6 +407,8 @@ def generate_model_config():
 
     rpn_attrs_list = [constants.KEY_BOXES_2D, constants.KEY_OBJECTNESS]
     rcnn_attrs_list = [constants.KEY_BOXES_2D, constants.KEY_CLASSES]
+    if NET_TYPE in ['fpn_corners_2d']:
+        rcnn_attrs_list.append(constants.KEY_CORNERS_2D)
     rpn_instance = generate_instance_config(
         rpn_attrs_list,
         fg_thresh=0.7,
@@ -424,7 +438,7 @@ def generate_model_config():
         "pre_nms_topN": pre_nms_topN
     }
     model_config = {
-        "in_channels":in_channels,
+        "in_channels": in_channels,
         "sampler_config": {
             "num_samples": 512,
             "type": "balanced",

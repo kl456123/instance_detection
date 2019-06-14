@@ -174,12 +174,22 @@ class Instance(dict):
             image_info: shape(N, 4) ([h, w, scale_h, scale_w])
             instance: dict(N, M, num_channels)
         """
+        # boxes_2d
         boxes_2d = instance[constants.KEY_BOXES_2D]
         image_info = image_info.unsqueeze(-1).unsqueeze(-1)
         boxes_2d[:, :, ::2] = boxes_2d[:, :, ::2] / image_info[:, 3]
         boxes_2d[:, :, 1::2] = boxes_2d[:, :, 1::2] / image_info[:, 2]
 
         instance[constants.KEY_BOXES_2D] = boxes_2d
+
+        # corners_2d
+        #  import ipdb
+        #  ipdb.set_trace()
+        corners_2d = instance[constants.KEY_CORNERS_2D]
+        corners_2d[:, :, :, 0] = corners_2d[:, :, :, 0] / image_info[:, 3]
+        corners_2d[:, :, :, 1] = corners_2d[:, :, :, 1] / image_info[:, 2]
+        instance[constants.KEY_CORNERS_2D] = corners_2d
+
         return instance
 
     def generate_losses(self, output_dict, feed_dict, auxiliary_dict):

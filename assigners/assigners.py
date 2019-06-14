@@ -118,7 +118,8 @@ class Box2DTargetAssigner(RegTargetAssigner):
         assigned_gt = self.generate_assigned_label(match, gt)
         # prepare coder
         # 2d coder config
-        reg_targets_batch = self.coder.encode_batch(assigned_gt, auxiliary_dict)
+        reg_targets_batch = self.coder.encode_batch(assigned_gt,
+                                                    auxiliary_dict)
         reg_targets_batch[match == -1] = 0
         # no need grad_fn
 
@@ -375,27 +376,27 @@ class Box2DTargetAssigner(RegTargetAssigner):
 # # no need grad_fn
 # return reg_targets_batch
 
-# @TARGET_ASSIGNERS.register(constants.KEY_CORNERS_2D)
-# class Corners2DTargetAssigner(RegTargetAssigner):
-# @classmethod
-# def assign_target(cls, **kwargs):
-# match = kwargs[constants.KEY_MATCH]
-# # label_boxes_2d = kwargs[constants.KEY_BOXES_2D]
-# proposals = kwargs[constants.KEY_PROPOSALS]
-# label_boxes_3d = kwargs[constants.KEY_BOXES_3D]
-# p2 = kwargs[constants.KEY_STEREO_CALIB_P2]
-# image_info = kwargs[constants.KEY_IMAGE_INFO]
 
-# # prepare coder
-# # 2d coder config
-# label_boxes_3d = cls.generate_assigned_label(
-# cls, kwargs[constants.KEY_MATCH], label_boxes_3d)
-# coder = bbox_coders.build({'type': constants.KEY_CORNERS_2D_STABLE})
-# reg_targets_batch = coder.encode_batch(label_boxes_3d, proposals,
-# p2, image_info)
-# reg_targets_batch[match == -1] = 0
-# # no need grad_fn
-# return reg_targets_batch
+@TARGET_ASSIGNERS.register(constants.KEY_CORNERS_2D)
+class Corners2DTargetAssigner(RegTargetAssigner):
+    def _assign_targets_and_inside_weights(self, feed_dict, auxiliary_dict):
+        match = auxiliary_dict[constants.KEY_MATCH]
+        #  proposals = auxiliary_dict[constants.KEY_PROPOSALS]
+        label_boxes_3d = feed_dict[constants.KEY_BOXES_3D]
+        auxiliary_dict[constants.KEY_STEREO_CALIB_P2] = feed_dict[
+            constants.KEY_STEREO_CALIB_P2]
+        auxiliary_dict[constants.KEY_IMAGE_INFO] = feed_dict[
+            constants.KEY_IMAGE_INFO]
+
+        # prepare coder
+        label_boxes_3d = self.generate_assigned_label(match, label_boxes_3d)
+        reg_targets_batch = self.coder.encode_batch(label_boxes_3d,
+                                                    auxiliary_dict)
+        reg_targets_batch[match == -1] = 0
+        # no need grad_fn
+
+        return reg_targets_batch, None
+
 
 # @TARGET_ASSIGNERS.register(constants.KEY_CORNERS_3D)
 # class Corners3DTargetAssigner(RegTargetAssigner):
