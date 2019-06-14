@@ -121,7 +121,7 @@ python utils/generate_config.py
     # --model /data/object/liangxiong/test/fpn_corners_3d/mono_3d_kitti/detector_600000.pth
 
 CUDA_VISIBLE_DEVICES=0 python train.py --cuda \
-    --net faster_rcnn \
+    --net fpn \
     --out_path /data/object/liangxiong/test \
     --config configs/test_config.json
     # --model /data/object/liangxiong/test/fpn_corners_3d/mono_3d_kitti/detector_600000.pth

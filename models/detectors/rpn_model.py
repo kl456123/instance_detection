@@ -13,7 +13,6 @@ from lib.model.roi_layers import nms
 from utils.registry import DETECTORS
 # import samplers
 import anchor_generators
-from models.losses import common_loss
 from core import constants
 from core.instances import Instance
 import samplers
@@ -49,12 +48,10 @@ class RPNModel(Model):
         # define the convrelu layers processing input feature map
         self.rpn_conv = nn.Conv2d(self.in_channels, 512, 3, 1, 1, bias=True)
 
-        in_channels = 512
-
         branches = {}
         for attr in self.instance:
             num_channels = self.instance[attr].num_channels * self.num_anchors
-            branches[attr] = nn.Conv2d(in_channels, num_channels, 1, 1, 0)
+            branches[attr] = nn.Conv2d(512, num_channels, 1, 1, 0)
 
         self.branches = nn.ModuleDict(branches)
 

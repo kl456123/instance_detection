@@ -2,12 +2,12 @@
 
 import torch.nn as nn
 from lib.model.roi_layers import ROIAlign
+from lib.model.roi_layers import AdaptiveROIAlign
 
 from core.model import Model
 from core.filler import Filler
 from core import constants
 
-from models.losses import common_loss
 from models.losses.focal_loss import FocalLoss
 
 from utils.registry import DETECTORS
@@ -62,7 +62,8 @@ class FasterRCNN(Model):
                     self.instance_info.generate_stats(auxiliary_dict))
 
             rois = box_ops.box2rois(proposals)
-            pooled_feat = self.rcnn_pooling(base_feat, rois.view(-1, 5))
+            pooled_feat = self.rcnn_pooling(base_feat, rois.view(-1, 5),
+                                            1 / 16)
 
             # shape(N,C,1,1)
             pooled_feat = self.feature_extractor.second_stage_feature(
@@ -110,17 +111,17 @@ class FasterRCNN(Model):
         self.feature_extractor = feature_extractors.build(
             self.feature_extractor_config)
         self.rpn_model = detectors.build(self.rpn_config)
-        if self.pooling_mode == 'align':
-            self.rcnn_pooling = ROIAlign(
-                (self.pooling_size, self.pooling_size), 1.0 / 16.0, 2)
-        in_channels = 512
+        #  self.rcnn_pooling = ROIAlign(
+        #  (self.pooling_size, self.pooling_size), 1.0 / 16.0, 2)
+        self.rcnn_pooling = AdaptiveROIAlign(
+            (self.pooling_size, self.pooling_size), 2)
 
         # construct  many branches for each attr of instance
         branches = {}
         for attr in self.instance_info:
             num_channels = self.instance_info[attr].num_channels
             branches[attr] = nn.ModuleList([
-                nn.Linear(in_channels, num_channels)
+                nn.Linear(self.in_channels, num_channels)
                 for _ in range(self.num_stages)
             ])
         self.branches = nn.ModuleDict(branches)
@@ -148,3 +149,5 @@ class FasterRCNN(Model):
         self.sampler = samplers.build(model_config['sampler_config'])
 
         self.num_stages = 1
+
+        self.in_channels = model_config['in_channels']

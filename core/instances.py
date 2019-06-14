@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import torch
+
 import assigners
 from models.losses import losses
 from core import constants
 import matchers
 import similarity_calcs
-from models.losses import common_loss
 from core.utils.analyzer import Analyzer
+from core.utils import format_checker
 
 
 class InstanceAssigner(dict):
@@ -81,6 +83,50 @@ class LossDict(dict):
 
     def get_weights(self, attr_name):
         return self[attr_name][self.KEY_WEIGHTS]
+
+    @staticmethod
+    def calc_loss(module, targets, normalize=True):
+        """
+            Args:
+                weight: shape(N)
+                pred: shape(N, num_classes)
+                target: shape(N)
+            """
+        weight = targets[LossDict.KEY_WEIGHTS]
+        preds = targets[LossDict.KEY_PREDS]
+        target = targets[LossDict.KEY_TARGETS]
+        batch_size = weight.shape[0]
+
+        # how to reshape them
+        preds_shape = preds.shape
+        target_shape = target.shape
+        if len(preds_shape) == len(target_shape):
+            # assume one2one match(reg loss)
+            #  import ipdb
+            #  ipdb.set_trace()
+            loss = module(preds, target)
+            format_checker.check_tensor_dims(loss, 3)
+            loss = loss * weight.unsqueeze(-1)
+            loss = loss.sum(dim=-1)
+
+        elif len(preds_shape) == len(target_shape) + 1:
+            # assume cls loss
+            # weight = weight.view(-1)
+            # target = target.view(-1)
+            # preds = preds.view(-1, preds_shape[-1])
+
+            loss = module(preds.view(-1, preds_shape[-1]), target.view(-1))
+            format_checker.check_tensor_dims(loss, 1)
+            loss = loss * weight.view(-1)
+            loss = loss.view(batch_size, -1)
+        else:
+            raise ValueError('can not assume any possible loss type')
+
+        if normalize:
+            num_valid = (weight > 0).float().sum().clamp(min=1)
+            return loss.sum() / num_valid
+        else:
+            return loss.sum()
 
 
 class Instance(dict):
@@ -176,11 +222,12 @@ class Instance(dict):
         return losses
 
     def calc_loss(self, losses):
+
         loss_dict = dict()
         for attr_name in self.instance_losses:
             instance_loss_fn = self.instance_losses[attr_name]
-            loss_dict[attr_name] = common_loss.calc_loss(
-                instance_loss_fn, losses[attr_name])
+            loss_dict[attr_name] = LossDict.calc_loss(instance_loss_fn,
+                                                      losses[attr_name])
         return loss_dict
 
     def reshape(self, output_dict):
@@ -195,6 +242,23 @@ class Instance(dict):
             attr_preds = attr_preds.permute(0, 2, 3, 1).contiguous().view(
                 batch_size, -1, num_channels)
             output_dict[attr_name] = attr_preds
+        return output_dict
+
+    def reshape_list(self, output_dict):
+        """
+            reshape and cat
+        """
+        for attr_name in output_dict:
+            attr_preds_list = output_dict[attr_name]
+            attr = self[attr_name]
+
+            for ind, attr_preds in enumerate(attr_preds_list):
+                batch_size = attr_preds.shape[0]
+                num_channels = attr.num_channels
+                attr_preds = attr_preds.permute(0, 2, 3, 1).contiguous().view(
+                    batch_size, -1, num_channels)
+                output_dict[attr_name][ind] = attr_preds
+            output_dict[attr_name] = torch.cat(output_dict[attr_name], dim=1)
         return output_dict
 
     def unsqueeze(self, output_dict, batch_size):

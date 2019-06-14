@@ -12,7 +12,8 @@ from core import constants
 # NET_TYPE = 'prnet'
 # NET_TYPE = 'prnet_mono_3d'
 # NET_TYPE = 'maskrcnn'
-NET_TYPE = 'faster_rcnn'
+# NET_TYPE = 'faster_rcnn'
+NET_TYPE = 'fpn'
 DATASET_TYPE = 'kitti'
 JOBS = False
 DEBUG = not JOBS
@@ -32,7 +33,7 @@ if DEBUG:
         testing_dataset_file = "data/dataset_files/nuscenes_demo.txt"
     lr_scheduler = 'step'
     optimizer = 'sgd'
-    if NET_TYPE == 'faster_rcnn':
+    if NET_TYPE in ['faster_rcnn']:
         # more better than sgd in faster rcnn
         optimizer = 'adam'
 else:
@@ -91,10 +92,12 @@ if NET_TYPE in ['faster_rcnn']:
     feature_extractor_type = 'resnet'
     rpn_type = 'rpn'
     use_pyramid = False
+    in_channels = 512
 else:
     feature_extractor_type = 'fpn'
     rpn_type = 'fpn_rpn'
     use_pyramid = True
+    in_channels = 1024
 net_arch = 'res18_pruned'
 rpn_fg_fraction = 0.5
 if net_arch == 'res18_pruned':
@@ -421,6 +424,7 @@ def generate_model_config():
         "pre_nms_topN": pre_nms_topN
     }
     model_config = {
+        "in_channels":in_channels,
         "sampler_config": {
             "num_samples": 512,
             "type": "balanced",
