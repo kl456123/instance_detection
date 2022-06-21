@@ -9,7 +9,7 @@ ipython-genutils==0.2.0
 jedi==0.13.3
 kiwisolver==1.0.1
 matplotlib==3.0.3
-numpy==1.16.2
+numpy==1.22.0
 opencv-python==4.2.0.32
 parso==0.4.0
 pexpect==4.7.0
