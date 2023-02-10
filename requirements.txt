@@ -4,7 +4,7 @@ decorator==4.4.0
 easydict==1.9
 -e git+https://github.com/kl456123/Detection.git@01178ff2b3373cb5e0fafd3dd48e1cd6335d61a9#egg=faster_rcnn&subdirectory=lib
 ipdb==0.12
-ipython==7.16.3
+ipython==8.10.0
 ipython-genutils==0.2.0
 jedi==0.13.3
 kiwisolver==1.0.1
